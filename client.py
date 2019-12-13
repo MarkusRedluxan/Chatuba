@@ -12,87 +12,93 @@ help_msg = {
 	'clear': ['', 'Clear all lines.']
 }
 
-print('Welcome to Chat!\n')
-
-name = input('Your name[Unknown]: ')
-
-if not name:
-	name = 'Unknown'
-
+name = ''
 server = {}
 
-server['ip'] = input('Server IP[localhost]: ')
+def login():
+	global name, server
 
-if not server['ip']:
-	server['ip'] = 'localhost'
+	print('Welcome to Chatuba!\n')
+	
+	txt = input('Your name[Unknown]: ')
+	name = txt if txt else 'Unknown'
 
-try:
-	server['port'] = int(input('Server PORT[6666]: '))
-except ValueError:
-	server['port'] = 6666
+	txt = input('Server IP[localhost]: ')
+	server['ip'] = txt if txt else 'localhost'
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((server['ip'], server['port']))
+	try:
+		server['port'] = int(input('Server PORT[6666]: '))
+	except ValueError:
+		server['port'] = 6666
 
-print()
-print('# Connecting... ', end='')
-
-client.send(str.encode('join:' + name))
-server['name'] = client.recv(2048).decode()
-
-print('OK!\n')
-
-while True:
-	cmd = input('%s@%s: ' % (name, server['name'])).strip().split(' ')
-	cmd[0] = cmd[0].lower()
+def setup():
+	client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	client.connect((server['ip'], server['port']))
 
 	print()
+	print('# Connecting... ', end='')
 
-	if not cmd[0]:
-		os.system('cls' if os.name == 'nt' else 'clear')
-		client.send(str.encode('list:msgs'))
-		reply = client.recv(2048).decode()
-		print(reply)
+	client.send(str.encode('join:' + name))
+	server['name'] = client.recv(2048).decode()
 
-	elif cmd[0] == 'exit':
-		break
+	print('OK!\n')
 
-	elif cmd[0] == 'help':
-		if len(cmd) == 1:
-			for msg in help_msg:
-				print('%s %s: %s' % (msg, help_msg[msg][0], help_msg[msg][1]))
-
-			print()
-
-		else:
-			try:
-				print('%s %s: %s\n' % (cmd[1], help_msg[cmd[1]][0], help_msg[cmd[1]][1]))
-			except KeyError:
-				print('# Unknown command!\n')
-
-	elif cmd[0] == 'list':
-		if len(cmd) == 1:
-			print('# What do you want to list?')
-			print('Tip: Use \'help list\'.\n')
-
-		else:
-			client.send(str.encode('list:' + cmd[1].lower()))
+def main():
+	while True:
+		cmd = input('%s@%s: ' % (name, server['name'])).strip().split(' ')
+		cmd[0] = cmd[0].lower()
+	
+		print()
+	
+		if not cmd[0]:
+			os.system('cls' if os.name == 'nt' else 'clear')
+			client.send(str.encode('list:msgs'))
 			reply = client.recv(2048).decode()
 			print(reply)
-
-	elif cmd[0] == 'send' or cmd[0] == '-':
-		if len(cmd) == 1:
-			print('# You cannot send a empty message!')
-			print('Tip: Use \'help send\'.\n')
-
+		
+		elif cmd[0] == 'exit':
+			break
+	
+		elif cmd[0] == 'help':
+			if len(cmd) == 1:
+				for msg in help_msg:
+					print('%s %s: %s' % (msg, help_msg[msg][0], help_msg[msg][1]))
+	
+				print()
+	
+			else:
+				try:
+					print('%s %s: %s\n' % (cmd[1], help_msg[cmd[1]][0], help_msg[cmd[1]][1]))
+				except KeyError:
+					print('# Unknown command!\n')
+	
+		elif cmd[0] == 'list':
+			if len(cmd) == 1:
+				print('# What do you want to list?')
+				print('Tip: Use \'help list\'.\n')
+	
+			else:
+				client.send(str.encode('list:' + cmd[1].lower()))
+				reply = client.recv(2048).decode()
+				print(reply)
+	
+		elif cmd[0] == 'send' or cmd[0] == '-':
+			if len(cmd) == 1:
+				print('# You cannot send a empty message!')
+				print('Tip: Use \'help send\'.\n')
+	
+			else:
+				client.send(str.encode('add:' + ' '.join(cmd[1:])))
+				reply = client.recv(2048).decode()
+	
+		elif cmd[0] == 'clear' or cmd[0] == 'cls':
+			os.system('cls' if os.name == 'nt' else 'clear')
+	
 		else:
-			client.send(str.encode('add:' + ' '.join(cmd[1:])))
-			reply = client.recv(2048).decode()
+			print('# Unknown command!\n')
+	
+	client.close()
 
-	elif cmd[0] == 'clear' or cmd[0] == 'cls':
-		os.system('cls' if os.name == 'nt' else 'clear')
+if __name__ == '__main__':
+	main()
 
-	else:
-		print('# Unknown command!\n')
-
-client.close()
