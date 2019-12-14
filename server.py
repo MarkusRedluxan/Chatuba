@@ -13,7 +13,7 @@ messages = []
 def init():
 	global name, port
 
-	print('Welcome to Chat(SERVER)!\n')
+	print('Welcome to Chatuba(SERVER)!\n')
 
 	name = input('Name[ChatServer]: ')
 

@@ -27,9 +27,15 @@ def man(cmd):
 	'''Show how to use a command.'''
 	global funcs
 	
-	if not cmd:
+	print()
+
+	try:
+		print('%s: %s' % (cmd[0], funcs[cmd[0]].__doc__))
+	except:
 		for cmd in funcs.keys():
 			print('%s: %s' % (cmd, funcs[cmd].__doc__))
+	
+	print()
 
 def lst(what):
 	'''List users[usr] or messages[msg] in the server.'''
@@ -38,7 +44,7 @@ def lst(what):
 	what = 'list:' + ' '.join(what)
 	client.send(str.encode(what))
 	reply = client.recv(2048).decode()
-	print(reply)
+	print('\n%s' % reply)
 
 def send(what):
 	'''Send a text message to the server.'''
