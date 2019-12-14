@@ -16,11 +16,11 @@ client = None
 # because some commands like Python lang functions. So, using 'funcs
 # dictionary' is possible find and call the functions.
 
-def exit():
+def close(nothing):
 	'''Exit the server and close the app.'''
 	global done, client
 	
-	done = False
+	done = True
 	client.close()
 
 def man(cmd):
@@ -28,11 +28,13 @@ def man(cmd):
 	global funcs
 	
 	if not cmd:
-		for func in funcs:		
-			print(func.__doc__)
+		for cmd in funcs.keys():
+			print('%s: %s' % (cmd, funcs[cmd].__doc__))
 
 def lst(what):
 	'''List users[usr] or messages[msg] in the server.'''
+	global client
+
 	what = 'list:' + ' '.join(what)
 	client.send(str.encode(what))
 	reply = client.recv(2048).decode()
@@ -40,21 +42,18 @@ def lst(what):
 
 def send(what):
 	'''Send a text message to the server.'''
+	global client
+
 	what = 'add:' + ' '.join(what)
 	client.send(str.encode(what))
 	reply = client.recv(2048).decode()
-
-def clear():
-	'''Clear screen (remove all text displayed).'''
-	os.system('cls' if os.name == 'nt' else 'clear')
 
 # In this dict all references to the user functions are stored.
 funcs = {
 	'exit': close,
 	'help': man,
 	'list': lst,
-	'send': send,
-	'clear': clear
+	'send': send
 }
 
 # Internal functions:
@@ -115,7 +114,7 @@ def main():
 	global done
 	
 	login()
-	seput()
+	setup()
 	
 	while not done:
 		check()
