@@ -64,7 +64,7 @@ funcs = {
 def login():
 	global name, server
 
-	print('Welcome to Chatuba!\n')
+	print('# Welcome to Chatuba!', end='\n\n')
 	
 	txt = input('Your name[Unknown]: ')
 	name = txt if txt else 'Unknown'
@@ -83,32 +83,40 @@ def setup():
 	client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	client.connect((server['ip'], server['port']))
 
-	print()
-	print('# Connecting... ', end='')
+	print('\n# Connecting... ', end='')
 
 	client.send(str.encode('join:' + name))
 	server['name'] = client.recv(2048).decode()
 	prompt = '%s@%s: ' % (name, server['name'])
 
-	print('OK!\n')
+	print('OK!', end='\n\n')
+
+def parse(cmds):
+	cmds = cmds.split(';')
+	
+	for cmd in cmds:
+		if not cmd.strip():
+			cmds.remove(cmd)
+	
+	return cmds
 
 def check():
 	global funcs
 
-	cmds = input(prompt)
-	
-	if cmds.strip()[0] == '!':
-		os.system(cmds.replace('!', '', 1))
-		return None
-	
-	cmds = cmds.rsplit(';')
+	cmds = parse(input(prompt))
 
 	for cmd in cmds:
 		try:
-			cmd = cmd.rsplit(' ')
-			funcs[cmd[0]](cmd[1:])
+			cmd = cmd.split()
+
+			if cmd[0][0] == '!':
+				cmd[0] = cmds[0].replace('!', '', 1)
+				os.system(' '.join(cmd))
+			
+			else:
+				funcs[cmd[0]](cmd[1:])
 		except KeyError:
-			print('%s: not find \'-\'' % cmd[0])
+			print('\n# %s: not found.' % cmd[0], end='\n\n')
 
 def main():
 	global done
