@@ -4,31 +4,63 @@ import os
 import socket
 
 
-help_msg = {
-	'exit': ['', 'Close the app.'],
-	'help': ['[cmd]', 'Show how to use a command.'],
-	'list': ['[items]', 'List users(users) or messages(msgs).'],
-	'send': ['[message]', 'Send a message.'],
-	'clear': ['', 'Clear all lines.']
-}
-
 done = False
 name = ''
 server = {}
+prompt = '> '
 client = None
 
+# User functions:
+# These functions are called when the user (client) types a command.
+# All the commands are keys in 'funcs dictionary'.. It is a bit stange,
+# because some commands like Python lang functions. So, using 'funcs
+# dictionary' is possible find and call the functions.
+
 def exit():
+	'''Exit the server and close the app.'''
 	global done, client
+	
 	done = False
 	client.close()
 
-func = {
+def man(cmd):
+	'''Show how to use a command.'''
+	global funcs
+	
+	if not cmd:
+		for func in funcs:		
+			print(func.__doc__)
+
+def lst(what):
+	'''List users[usr] or messages[msg] in the server.'''
+	what = 'list:' + ' '.join(what)
+	client.send(str.encode(what))
+	reply = client.recv(2048).decode()
+	print(reply)
+
+def send(what):
+	'''Send a text message to the server.'''
+	what = 'add:' + ' '.join(what)
+	client.send(str.encode(what))
+	reply = client.recv(2048).decode()
+
+def clear():
+	'''Clear screen (remove all text displayed).'''
+	os.system('cls' if os.name == 'nt' else 'clear')
+
+# In this dict all references to the user functions are stored.
+funcs = {
 	'exit': close,
 	'help': man,
 	'list': lst,
 	'send': send,
 	'clear': clear
 }
+
+# Internal functions:
+# These functions are used during an app session.
+# It means these make something like get user date, connect the server,
+# etc. The bulk of these are called in 'main function'.
 
 def login():
 	global name, server
@@ -47,7 +79,7 @@ def login():
 		server['port'] = 6666
 
 def setup():
-	global client, server
+	global client, server, prompt
 
 	client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	client.connect((server['ip'], server['port']))
@@ -57,61 +89,27 @@ def setup():
 
 	client.send(str.encode('join:' + name))
 	server['name'] = client.recv(2048).decode()
+	prompt = '%s@%s: ' % (name, server['name'])
 
 	print('OK!\n')
 
 def check():
-	cmd = input('%s@%s: ' % (name, server['name'])).strip().split(' ')
-	cmd[0] = cmd[0].lower()
+	global funcs
 
-	print()
+	cmds = input(prompt)
+	
+	if cmds.strip()[0] == '!':
+		os.system(cmds.replace('!', '', 1))
+		return None
+	
+	cmds = cmds.rsplit(';')
 
-	if not cmd[0]:
-		os.system('cls' if os.name == 'nt' else 'clear')
-		client.send(str.encode('list:msgs'))
-		reply = client.recv(2048).decode()
-		print(reply)
-
-	elif cmd[0] == 'exit':
-		exit()
-
-	elif cmd[0] == 'help':
-		if len(cmd) == 1:
-			for msg in help_msg:
-				print('%s %s: %s' % (msg, help_msg[msg][0], help_msg[msg][1]))
-
-			print()
-
-		else:
-			try:
-				print('%s %s: %s\n' % (cmd[1], help_msg[cmd[1]][0], help_msg[cmd[1]][1]))
-			except KeyError:
-				print('# Unknown command!\n')
-
-	elif cmd[0] == 'list':
-		if len(cmd) == 1:
-			print('# What do you want to list?')
-			print('Tip: Use \'help list\'.\n')
-
-		else:
-			client.send(str.encode('list:' + cmd[1].lower()))
-			reply = client.recv(2048).decode()
-			print(reply)
-
-	elif cmd[0] == 'send' or cmd[0] == '-':
-		if len(cmd) == 1:
-			print('# You cannot send a empty message!')
-			print('Tip: Use \'help send\'.\n')
-
-		else:
-			client.send(str.encode('add:' + ' '.join(cmd[1:])))
-			reply = client.recv(2048).decode()
-
-	elif cmd[0] == 'clear' or cmd[0] == 'cls':
-		os.system('cls' if os.name == 'nt' else 'clear')
-
-	else:
-		print('# Unknown command!\n')
+	for cmd in cmds:
+		try:
+			cmd = cmd.rsplit(' ')
+			funcs[cmd[0]](cmd[1:])
+		except KeyError:
+			print('%s: not find \'-\'' % cmd[0])
 
 def main():
 	global done
