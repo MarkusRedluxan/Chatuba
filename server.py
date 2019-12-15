@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import os
+import readline
 import socket
 
 from _thread import *
