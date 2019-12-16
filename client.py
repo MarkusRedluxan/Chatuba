@@ -116,9 +116,12 @@ def parse(cmds):
 def check():
 	global funcs
 
-	cmds = parse(input(prompt))
+	try:
+		cmds = input(prompt)
+	except:
+		cmds = 'exit'
 
-	for cmd in cmds:
+	for cmd in parse(cmds):
 		try:
 			cmd = cmd.split()
 
@@ -134,7 +137,11 @@ def check():
 def main():
 	global done
 	
-	login()
+	try:
+		login()
+	except:
+		exit()
+
 	setup()
 	
 	while not done:
