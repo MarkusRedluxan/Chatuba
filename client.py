@@ -42,10 +42,16 @@ def lst(what):
 	'''List users[usr] or messages[msg] in the server.'''
 	global client
 
-	what = 'list:' + ' '.join(what)
-	client.send(str.encode(what))
-	reply = client.recv(2048).decode()
-	print('\n%s' % reply)
+	what = ' '.join(what)
+
+	if what == 'msg' or what == 'usr':
+		what = 'list:' + what
+		client.send(str.encode(what))
+		reply = client.recv(2048).decode()
+		print('\n%s' % reply)
+	
+	else:
+		print('\n# %s: not exist.', what, end='\n\n')
 
 def send(what):
 	'''Send a text message to the server.'''

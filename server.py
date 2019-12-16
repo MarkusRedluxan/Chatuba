@@ -47,11 +47,11 @@ def work(conn, addr):
 			elif cmd == 'list':
 				reply = ''
 
-				if arg == 'users':
+				if arg == 'usr':
 					for user in users:
 						reply += '[%s]: %s' % (user, users[user]) + '\n'
 
-				elif arg == 'msgs':
+				elif arg == 'msg':
 					if len(messages) == 0:
 						reply = '...\n'
 
