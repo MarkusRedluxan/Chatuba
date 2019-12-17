@@ -1,7 +1,5 @@
-# custom files
-custom/
+# Custom scripts
+#custom/
 
-# temp files directories
-cache/
-log/
+# Temp files
 *.swp
