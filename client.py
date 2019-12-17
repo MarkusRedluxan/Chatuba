@@ -33,9 +33,14 @@ def man(cmd):
 	try:
 		print('%s: %s' % (cmd[0], funcs[cmd[0]].__doc__))
 	except:
+		print('# General commands:')
+
 		for cmd in funcs.keys():
 			print('%s: %s' % (cmd, funcs[cmd].__doc__))
-	
+		
+		print('\n# OS commands:')
+		print('You can use \'!\' to call os commands, e.g. \'!clear\'.')
+
 	print()
 
 def lst(what):
@@ -49,9 +54,8 @@ def lst(what):
 		client.send(str.encode(what))
 		reply = client.recv(2048).decode()
 		print('\n%s' % reply)
-	
 	else:
-		print('\n# %s: not exist.', what, end='\n\n')
+		print('\n# %s: not exist.' % what, end='\n\n')
 
 def send(what):
 	'''Send a text message to the server.'''
@@ -126,9 +130,9 @@ def check():
 			cmd = cmd.split()
 
 			if cmd[0][0] == '!':
-				cmd[0] = cmds[0].replace('!', '', 1)
+				cmd[0] = cmd[0].replace('!', '', 1)
+				print('# os:', ' '.join(cmd))
 				os.system(' '.join(cmd))
-			
 			else:
 				funcs[cmd[0]](cmd[1:])
 		except KeyError:
