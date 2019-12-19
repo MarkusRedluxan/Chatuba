@@ -7,26 +7,44 @@ import socket
 from _thread import *
 
 
-name, port = '', 0
+name = ''
+port = 0
+done = False
+server = None
 users = {}
 messages = []
 
-def init():
+def login():
 	global name, port
 
 	print('Welcome to Chatuba(SERVER)!\n')
 
-	name = input('Name[ChatServer]: ')
-
-	if not name:
-		name = 'ChatServer'
+	name = input('Name[ChatServer]: ').strip()
+	name = name if name else 'ChatServer'
 
 	try:
 		port = int(input('Port[6666]: '))
 	except ValueError:
 		port = 6666
 
-def work(conn, addr):
+def setup():
+	global server
+
+	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server.bind(('', port))
+	server.listen()
+	
+	print()
+
+	if os.name == 'nt':
+		os.system('ipconfig | find "IPv4"') 
+
+	else:
+		os.system('echo IP: $(hostname -I)')
+	
+	print('\n# Running...', end='\n\n')
+
+def session(conn, addr):
 	global messages
 
 	while True:
@@ -49,7 +67,7 @@ def work(conn, addr):
 
 				if arg == 'usr':
 					for user in users:
-						reply += '[%s]: %s' % (user, users[user]) + '\n'
+						reply += '[%s]: %s' % (user[0], users[user]) + '\n'
 
 				elif arg == 'msg':
 					if len(messages) == 0:
@@ -69,26 +87,34 @@ def work(conn, addr):
 
 	conn.close()
 	users.pop(addr)
-	print('#', addr, 'unconnected;')
+	print('# %s: unconnected.' % addr[0])
 
-init()
-print()
+def check():
+	global server, done
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('', port))
-server.listen()
-
-os.system('ipconfig | find "IPv4"' if os.name == 'nt' else 'echo IP: $(hostname -I)')
-print()
-print('# Running...')
-
-while True:
 	try:
 		conn, addr = server.accept()
-		print('#', addr, 'connected;')
+		print('# %s: connected.' % addr[0])
 
-		start_new_thread(work, (conn, addr))
+		start_new_thread(session, (conn, addr))
 	except KeyboardInterrupt:
-		break
+		done = True
 
-server.close()
+def main():
+	global done, server
+
+	try:
+		login()
+	except:
+		exit()
+
+	setup()
+	
+	while not done:
+		check()			
+	
+	print('\n# Server finished!')
+	server.close()
+
+if __name__ == '__main__':
+	main()

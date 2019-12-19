@@ -54,6 +54,7 @@ def lst(what):
 		client.send(str.encode(what))
 		reply = client.recv(2048).decode()
 		print('\n%s' % reply)
+
 	else:
 		print('\n# %s: not exist.' % what, end='\n\n')
 
@@ -83,11 +84,11 @@ def login():
 
 	print('# Welcome to Chatuba!', end='\n\n')
 	
-	txt = input('Your name[Unknown]: ')
-	name = txt if txt else 'Unknown'
+	name = input('Your name[Unknown]: ').strip()
+	name = name if name else 'Unknown'
 
-	txt = input('Server IP[localhost]: ')
-	server['ip'] = txt if txt else 'localhost'
+	server['ip'] = input('Server IP[localhost]: ').strip()
+	server['ip'] = server['ip'] if server['ip'] else 'localhost'
 
 	try:
 		server['port'] = int(input('Server PORT[6666]: '))
@@ -131,8 +132,8 @@ def check():
 
 			if cmd[0][0] == '!':
 				cmd[0] = cmd[0].replace('!', '', 1)
-				print('# os:', ' '.join(cmd))
 				os.system(' '.join(cmd))
+
 			else:
 				funcs[cmd[0]](cmd[1:])
 		except KeyError:
